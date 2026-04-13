@@ -44,6 +44,41 @@ app.on('window-all-closed', () => {
 // Map to track active powershell processes by taskId
 const activeProcesses = new Map();
 
+/**
+ * Copies a file to a 'failed' subdirectory in the same location.
+ * @param {string} filePath 
+ */
+function saveToFailedFolder(filePath) {
+  try {
+    const dir = path.dirname(filePath);
+    const failedDir = path.join(dir, 'failed');
+    if (!fs.existsSync(failedDir)) {
+      fs.mkdirSync(failedDir, { recursive: true });
+    }
+    const fileName = path.basename(filePath);
+    const destPath = path.join(failedDir, fileName);
+    fs.copyFileSync(filePath, destPath);
+  } catch (err) {
+    console.error('Failed to copy file to failures directory:', err);
+  }
+}
+
+/**
+ * Removes a file from the 'failed' subdirectory if it exists.
+ * @param {string} filePath 
+ */
+function removeFromFailedFolder(filePath) {
+  try {
+    const dir = path.dirname(filePath);
+    const failedFile = path.join(dir, 'failed', path.basename(filePath));
+    if (fs.existsSync(failedFile)) {
+      fs.unlinkSync(failedFile);
+    }
+  } catch (err) {
+    console.error('Failed to remove file from failures directory:', err);
+  }
+}
+
 // IPC Handlers
 ipcMain.handle('select-files', async () => {
   const result = await dialog.showOpenDialog({
@@ -171,6 +206,7 @@ ipcMain.handle('convert-doc', async (event, { filePath, taskId }) => {
       if (activeProcesses.has(taskId)) {
         ps.kill();
         activeProcesses.delete(taskId);
+        saveToFailedFolder(filePath);
         resolve({ success: false, error: 'Timeout' });
       }
     }, timeoutMs);
@@ -179,8 +215,10 @@ ipcMain.handle('convert-doc', async (event, { filePath, taskId }) => {
       clearTimeout(timeout);
       activeProcesses.delete(taskId);
       if (code === 0) {
+        removeFromFailedFolder(filePath);
         resolve({ success: true, path: destPath });
       } else {
+        saveToFailedFolder(filePath);
         resolve({ success: false, error: 'Conversion failed or was cancelled.' });
       }
     });
@@ -188,6 +226,7 @@ ipcMain.handle('convert-doc', async (event, { filePath, taskId }) => {
     ps.on('error', (err) => {
       clearTimeout(timeout);
       activeProcesses.delete(taskId);
+      saveToFailedFolder(filePath);
       resolve({ success: false, error: err.message });
     });
   });

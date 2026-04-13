@@ -297,6 +297,7 @@ footer {
 .action-group {
   display: flex;
   gap: 12px;
+  align-items: center;
 }
 
 .cancel-btn {
@@ -315,6 +316,31 @@ footer {
 .cancel-btn:hover {
   background: rgba(239, 68, 68, 0.2);
   color: var(--error);
+}
+
+.retry-btn {
+  background: transparent;
+  border: none;
+  color: var(--text-dim);
+  cursor: pointer;
+  padding: 4px;
+  border-radius: 4px;
+  transition: all 0.2s;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 14px;
+}
+
+.retry-btn:hover {
+  background: rgba(16, 185, 129, 0.2);
+  color: var(--success);
+}
+
+.file-actions {
+  display: flex;
+  gap: 8px;
+  align-items: center;
 }
 
 .status-timeout { color: #f59e0b; }

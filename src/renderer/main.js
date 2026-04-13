@@ -20,6 +20,8 @@ const translations = {
     itemSuccess: '成功',
     itemError: '失败',
     itemTimeout: '超时',
+    itemRetry: '重试',
+    retryAll: '重试所有失败项',
     itemStopped: '已停止',
     noWordError: '请确保系统中已安装相应的 Office 软件（Word/Excel/PPT）。',
   },
@@ -43,6 +45,8 @@ const translations = {
     itemSuccess: 'Success',
     itemError: 'Error',
     itemTimeout: 'Timeout',
+    itemRetry: 'Retry',
+    retryAll: 'Retry All Failed',
     itemStopped: 'Stopped',
     noWordError: 'Please ensure Microsoft Word/Excel/PowerPoint is installed.',
   }
@@ -105,7 +109,8 @@ class QueueManager {
       });
 
       if (result.success) {
-        file.status = 'success';
+        // Remove from queue on success
+        fileQueue = fileQueue.filter(f => f.path !== file.path);
       } else {
         if (result.error === 'Timeout') {
           file.status = 'timeout';
@@ -144,7 +149,7 @@ function initElements() {
   const ids = [
     'title', 'drop-text', 'or-text', 'select-files-btn', 'select-folder-btn',
     'queue-title', 'clear-btn', 'status-text', 'start-btn', 'stop-btn', 'lang-btn',
-    'file-list', 'drop-zone'
+    'file-list', 'drop-zone', 'retry-all-btn'
   ];
   
   ids.forEach(id => {
@@ -158,16 +163,20 @@ function updateUI() {
     if (elements[key]) elements[key].textContent = t[key];
   });
   
+  const hasFailed = fileQueue.some(f => f.status === 'error' || f.status === 'timeout');
+  
   if (!isConverting) {
     elements.statusText.textContent = stopRequested ? t.statusStopped : t.statusReady;
     elements.startBtn.disabled = fileQueue.length === 0;
     elements.stopBtn.disabled = true;
     elements.clearBtn.disabled = false;
+    elements.retryAllBtn.style.display = hasFailed ? 'block' : 'none';
   } else {
     elements.statusText.textContent = t.statusConverting;
     elements.startBtn.disabled = true;
     elements.stopBtn.disabled = false;
     elements.clearBtn.disabled = true;
+    elements.retryAllBtn.style.display = 'none';
   }
   
   renderList();
@@ -215,6 +224,8 @@ function renderList() {
       </div>
       <div class="file-actions">
         <span class="file-status ${statusClass}">${statusText}</span>
+        ${(file.status === 'error' || file.status === 'timeout') ? 
+          `<button class="retry-btn" onclick="retryTask(${index})" title="${t.itemRetry}">🔄</button>` : ''}
         ${(file.status === 'waiting' || file.status === 'converting') ? 
           `<button class="cancel-btn" onclick="cancelTask(${index})" title="Cancel">✕</button>` : ''}
       </div>
@@ -222,6 +233,29 @@ function renderList() {
     elements.fileList.appendChild(li);
   });
 }
+
+window.retryTask = (index) => {
+  const file = fileQueue[index];
+  if (file) {
+    file.status = 'waiting';
+    if (!isConverting) {
+      queueManager.start();
+    }
+    updateUI();
+  }
+};
+
+window.retryAllFailed = () => {
+  fileQueue.forEach(f => {
+    if (f.status === 'error' || f.status === 'timeout') {
+      f.status = 'waiting';
+    }
+  });
+  if (!isConverting) {
+    queueManager.start();
+  }
+  updateUI();
+};
 
 window.cancelTask = async (index) => {
   const file = fileQueue[index];
@@ -262,6 +296,10 @@ function initListeners() {
   elements.startBtn.addEventListener('click', () => {
     queueManager.start();
     updateUI();
+  });
+
+  elements.retryAllBtn.addEventListener('click', () => {
+    retryAllFailed();
   });
 
   elements.stopBtn.addEventListener('click', () => {
