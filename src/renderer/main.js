@@ -43,53 +43,68 @@ const translations = {
 let currentLang = 'zh';
 let fileQueue = [];
 let isConverting = false;
+let elements = {};
 
-// DOM Elements
-const elements = {
-  title: document.getElementById('title'),
-  dropText: document.getElementById('drop-text'),
-  orText: document.getElementById('or-text'),
-  selectFilesBtn: document.getElementById('select-files-btn'),
-  selectFolderBtn: document.getElementById('select-folder-btn'),
-  queueTitle: document.getElementById('queue-title'),
-  clearBtn: document.getElementById('clear-btn'),
-  statusText: document.getElementById('status-text'),
-  startBtn: document.getElementById('start-btn'),
-  langBtn: document.getElementById('lang-btn'),
-  fileList: document.getElementById('file-list'),
-  dropZone: document.getElementById('drop-zone'),
-};
+// Wait for DOM to be ready
+document.addEventListener('DOMContentLoaded', () => {
+  console.log('DOM Content Loaded. Initializing app...');
+  initElements();
+  initListeners();
+  updateUI();
+});
+
+function initElements() {
+  const ids = [
+    'title', 'drop-text', 'or-text', 'select-files-btn', 'select-folder-btn',
+    'queue-title', 'clear-btn', 'status-text', 'start-btn', 'lang-btn',
+    'file-list', 'drop-zone'
+  ];
+  
+  ids.forEach(id => {
+    const el = document.getElementById(id);
+    if (!el) {
+      console.warn(`Element with ID "${id}" not found!`);
+    }
+    // Mapping IDs to camelCase names
+    const camelId = id.replace(/-([a-z])/g, (g) => g[1].toUpperCase()).replace('Btn', 'Btn');
+    elements[camelId] = el;
+  });
+  
+  // Explicitly ensure critical ones are mapped
+  elements.selectFilesBtn = document.getElementById('select-files-btn');
+  elements.selectFolderBtn = document.getElementById('select-folder-btn');
+  elements.clearBtn = document.getElementById('clear-btn');
+  elements.startBtn = document.getElementById('start-btn');
+  elements.langBtn = document.getElementById('lang-btn');
+  elements.statusText = document.getElementById('status-text');
+  elements.dropZone = document.getElementById('drop-zone');
+  elements.fileList = document.getElementById('file-list');
+}
 
 function updateUI() {
   const t = translations[currentLang];
-  elements.title.textContent = t.title;
-  elements.dropText.textContent = t.dropText;
-  elements.orText.textContent = t.orText;
-  elements.selectFilesBtn.textContent = t.selectFiles;
-  elements.selectFolderBtn.textContent = t.selectFolder;
-  elements.queueTitle.textContent = t.queueTitle;
-  elements.clearBtn.textContent = t.clearBtn;
-  elements.langBtn.textContent = t.langBtn;
-  elements.startBtn.textContent = t.startBtn;
+  if (elements.title) elements.title.textContent = t.title;
+  if (elements.dropText) elements.dropText.textContent = t.dropText;
+  if (elements.orText) elements.orText.textContent = t.orText;
+  if (elements.selectFilesBtn) elements.selectFilesBtn.textContent = t.selectFiles;
+  if (elements.selectFolderBtn) elements.selectFolderBtn.textContent = t.selectFolder;
+  if (elements.queueTitle) elements.queueTitle.textContent = t.queueTitle;
+  if (elements.clearBtn) elements.clearBtn.textContent = t.clearBtn;
+  if (elements.langBtn) elements.langBtn.textContent = t.langBtn;
+  if (elements.startBtn) elements.startBtn.textContent = t.startBtn;
   
-  if (!isConverting) {
+  if (!isConverting && elements.statusText) {
     elements.statusText.textContent = t.statusReady;
   }
   
-  // Update existing list items
-  document.querySelectorAll('.file-item').forEach((item, index) => {
-    const statusSpan = item.querySelector('.file-status');
-    const status = fileQueue[index].status;
-    if (status === 'waiting') statusSpan.textContent = t.itemWaiting;
-    else if (status === 'converting') statusSpan.textContent = t.itemConverting;
-    else if (status === 'success') statusSpan.textContent = t.itemSuccess;
-    else if (status === 'error') statusSpan.textContent = t.itemError;
-  });
+  renderList();
 }
 
 function addFiles(paths) {
+  if (!paths || !Array.isArray(paths)) return;
+  
   paths.forEach(path => {
-    if (fileQueue.some(f => f.path === path)) return; // Prevent duplicates
+    if (fileQueue.some(f => f.path === path)) return;
     fileQueue.push({
       path,
       name: path.split(/[\\/]/).pop(),
@@ -97,10 +112,14 @@ function addFiles(paths) {
     });
   });
   renderList();
-  elements.startBtn.disabled = fileQueue.length === 0 || isConverting;
+  if (elements.startBtn) {
+    elements.startBtn.disabled = fileQueue.length === 0 || isConverting;
+  }
 }
 
 function renderList() {
+  if (!elements.fileList) return;
+  
   const t = translations[currentLang];
   elements.fileList.innerHTML = '';
   fileQueue.forEach((file, index) => {
@@ -124,79 +143,116 @@ function renderList() {
   });
 }
 
-// Event Listeners
-elements.langBtn.onclick = () => {
-  currentLang = currentLang === 'zh' ? 'en' : 'zh';
-  updateUI();
-};
-
-elements.selectFilesBtn.onclick = async () => {
-  const paths = await window.electronAPI.selectFiles();
-  if (paths) addFiles(paths);
-};
-
-elements.selectFolderBtn.onclick = async () => {
-  const paths = await window.electronAPI.selectFolder();
-  if (paths) addFiles(paths);
-};
-
-elements.clearBtn.onclick = () => {
-  if (isConverting) return;
-  fileQueue = [];
-  renderList();
-  elements.startBtn.disabled = true;
-};
-
-elements.startBtn.onclick = async () => {
-  if (isConverting || fileQueue.length === 0) return;
+function initListeners() {
+  console.log('Initializing listeners...');
   
-  isConverting = true;
-  elements.startBtn.disabled = true;
-  elements.clearBtn.disabled = true;
-  elements.statusText.textContent = translations[currentLang].statusConverting;
-
-  for (let i = 0; i < fileQueue.length; i++) {
-    if (fileQueue[i].status === 'success') continue;
-    
-    fileQueue[i].status = 'converting';
-    renderList();
-    
-    const result = await window.electronAPI.convertDoc(fileQueue[i].path);
-    
-    if (result.success) {
-      fileQueue[i].status = 'success';
-    } else {
-      fileQueue[i].status = 'error';
-      // If conversion fails, it might be Word missing
-      elements.statusText.textContent = translations[currentLang].noWordError;
-    }
-    renderList();
+  if (elements.langBtn) {
+    elements.langBtn.addEventListener('click', () => {
+      console.log('Language button clicked');
+      currentLang = currentLang === 'zh' ? 'en' : 'zh';
+      updateUI();
+    });
   }
 
-  isConverting = false;
-  elements.clearBtn.disabled = false;
-  elements.startBtn.disabled = false;
-  elements.statusText.textContent = translations[currentLang].statusDone;
-};
+  if (elements.selectFilesBtn) {
+    elements.selectFilesBtn.addEventListener('click', async () => {
+      console.log('Select files clicked');
+      try {
+        if (window.electronAPI && window.electronAPI.selectFiles) {
+          const paths = await window.electronAPI.selectFiles();
+          if (paths) addFiles(paths);
+        } else {
+          console.error('electronAPI.selectFiles is missing');
+          alert('System error: IPC bridge missing.');
+        }
+      } catch (err) {
+        console.error('IPC Error (selectFiles):', err);
+      }
+    });
+  }
 
-// Drag & Drop
-elements.dropZone.ondragover = (e) => {
-  e.preventDefault();
-  elements.dropZone.classList.add('dragover');
-};
+  if (elements.selectFolderBtn) {
+    elements.selectFolderBtn.addEventListener('click', async () => {
+      console.log('Select folder clicked');
+      try {
+        if (window.electronAPI && window.electronAPI.selectFolder) {
+          const paths = await window.electronAPI.selectFolder();
+          if (paths) addFiles(paths);
+        } else {
+          console.error('electronAPI.selectFolder is missing');
+        }
+      } catch (err) {
+        console.error('IPC Error (selectFolder):', err);
+      }
+    });
+  }
 
-elements.dropZone.ondragleave = () => {
-  elements.dropZone.classList.remove('dragover');
-};
+  if (elements.clearBtn) {
+    elements.clearBtn.addEventListener('click', () => {
+      if (isConverting) return;
+      fileQueue = [];
+      renderList();
+      if (elements.startBtn) elements.startBtn.disabled = true;
+    });
+  }
 
-elements.dropZone.ondrop = (e) => {
-  e.preventDefault();
-  elements.dropZone.classList.remove('dragover');
-  const files = Array.from(e.dataTransfer.files)
-    .filter(f => f.name.toLowerCase().endsWith('.doc'))
-    .map(f => f.path);
-  if (files.length > 0) addFiles(files);
-};
+  if (elements.startBtn) {
+    elements.startBtn.addEventListener('click', async () => {
+      if (isConverting || fileQueue.length === 0) return;
+      
+      isConverting = true;
+      elements.startBtn.disabled = true;
+      if (elements.clearBtn) elements.clearBtn.disabled = true;
+      if (elements.statusText) elements.statusText.textContent = translations[currentLang].statusConverting;
 
-// Init
-updateUI();
+      for (let i = 0; i < fileQueue.length; i++) {
+        if (fileQueue[i].status === 'success') continue;
+        
+        fileQueue[i].status = 'converting';
+        renderList();
+        
+        try {
+          const result = await window.electronAPI.convertDoc(fileQueue[i].path);
+          if (result.success) {
+            fileQueue[i].status = 'success';
+          } else {
+            fileQueue[i].status = 'error';
+            if (elements.statusText) elements.statusText.textContent = translations[currentLang].noWordError;
+          }
+        } catch (err) {
+          console.error('Conversion IPC Error:', err);
+          fileQueue[i].status = 'error';
+        }
+        renderList();
+      }
+
+      isConverting = false;
+      if (elements.clearBtn) elements.clearBtn.disabled = false;
+      elements.startBtn.disabled = false;
+      if (elements.statusText) elements.statusText.textContent = translations[currentLang].statusDone;
+    });
+  }
+
+  // Drag & Drop
+  if (elements.dropZone) {
+    elements.dropZone.addEventListener('dragover', (e) => {
+      e.preventDefault();
+      elements.dropZone.classList.add('dragover');
+    });
+
+    elements.dropZone.addEventListener('dragleave', () => {
+      elements.dropZone.classList.remove('dragover');
+    });
+
+    elements.dropZone.addEventListener('drop', (e) => {
+      e.preventDefault();
+      elements.dropZone.classList.remove('dragover');
+      if (e.dataTransfer && e.dataTransfer.files) {
+        const files = Array.from(e.dataTransfer.files)
+          .filter(f => f.name.toLowerCase().endsWith('.doc'))
+          .map(f => f.path);
+        if (files.length > 0) addFiles(files);
+      }
+    });
+  }
+}
