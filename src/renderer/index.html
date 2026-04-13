@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Doc2Docx Converter</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <div class="app-container">
+    <header>
+      <div class="logo">
+        <span class="icon">📄</span>
+        <h1 id="title">Doc to Docx Converter</h1>
+      </div>
+      <div class="lang-switch">
+        <button id="lang-btn">English</button>
+      </div>
+    </header>
+
+    <main>
+      <div class="drop-zone" id="drop-zone">
+        <div class="drop-zone-content">
+          <span class="upload-icon">📥</span>
+          <p id="drop-text">将 .doc 文件拖到此处</p>
+          <span id="or-text">或</span>
+          <div class="button-group">
+            <button id="select-files-btn" class="btn primary">选择文件</button>
+            <button id="select-folder-btn" class="btn secondary">选择文件夹</button>
+          </div>
+        </div>
+      </div>
+
+      <div class="file-list-container" id="file-list-container">
+        <div class="list-header">
+          <h2 id="queue-title">准备转换的文件</h2>
+          <button id="clear-btn" class="btn-text">清空列表</button>
+        </div>
+        <ul id="file-list" class="file-list">
+          <!-- Files will be injected here -->
+        </ul>
+      </div>
+    </main>
+
+    <footer>
+      <div class="status-bar">
+        <p id="status-text">就绪</p>
+      </div>
+      <button id="start-btn" class="btn active" disabled>开始转换</button>
+    </footer>
+  </div>
+
+  <script type="module" src="main.js"></script>
+</body>
+</html>

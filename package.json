@@ -1,0 +1,37 @@
+{
+  "name": "doc2docx",
+  "version": "1.0.0",
+  "description": "Portable Word Doc to Docx Converter",
+  "main": "src/main/index.js",
+  "author": "Antigravity",
+  "license": "MIT",
+  "scripts": {
+    "dev": "vite",
+    "build": "vite build && electron-builder",
+    "start": "electron ."
+  },
+  "dependencies": {
+    "electron-updater": "^6.1.4"
+  },
+  "devDependencies": {
+    "electron": "^28.2.0",
+    "electron-builder": "^24.9.1",
+    "vite": "^5.0.12"
+  },
+  "build": {
+    "appId": "com.antigravity.doc2docx",
+    "productName": "Doc2Docx",
+    "directories": {
+      "output": "dist-electron"
+    },
+    "files": [
+      "dist/**/*",
+      "src/main/**/*",
+      "src/preload/**/*",
+      "package.json"
+    ],
+    "win": {
+      "target": "portable"
+    }
+  }
+}
