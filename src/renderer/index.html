@@ -3,15 +3,15 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Doc2Docx Converter</title>
+  <title>Office Legacy Converter</title>
   <link rel="stylesheet" href="style.css">
 </head>
 <body>
   <div class="app-container">
     <header>
       <div class="logo">
-        <span class="icon">📄</span>
-        <h1 id="title">Doc to Docx Converter</h1>
+        <span class="icon">💼</span>
+        <h1 id="title">Office Legacy Converter</h1>
       </div>
       <div class="lang-switch">
         <button id="lang-btn">English</button>
@@ -46,7 +46,10 @@
       <div class="status-bar">
         <p id="status-text">就绪</p>
       </div>
-      <button id="start-btn" class="btn active" disabled>开始转换</button>
+      <div class="action-group">
+        <button id="stop-btn" class="btn danger" disabled>停止转换</button>
+        <button id="start-btn" class="btn active" disabled>开始转换</button>
+      </div>
     </footer>
   </div>
 

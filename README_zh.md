@@ -1,61 +1,62 @@
-# Doc2Docx 转换器
+# Office Legacy Converter (Office 旧版文档转换器)
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
-[![Version](https://img.shields.io/badge/version-1.0.0-blue.svg)](https://github.com/antigravity/doc2docx)
+[![Version](https://img.shields.io/badge/version-1.0.0-blue.svg)](https://github.com/antigravity/office-legacy-converter)
 
-**Doc2Docx** 是一款优质的、免安装的 Windows 便携应用，旨在将旧版的 `.doc` 文件高度还原地转换为现代的 `.docx` 格式。它拥有美观的磨砂玻璃风格（Glassmorphism）界面，无论是单文件还是批量转换，都能提供流畅的用户体验。
+**Office Legacy Converter** 是一款优质、免安装的 Windows 便携应用，支持批量将旧版 Office 文件（.doc, .xls, .ppt）高度还原地转换为现代 OpenXML 格式（.docx, .xlsx, .pptx）。它拥有美观的磨砂玻璃风格界面，并支持并发处理以提升转换效率。
 
 [English Documentation](README.md)
 
 ## ✨ 功能特性
 
-- 🚀 **便携免安装**：无需安装，双击 `.exe` 即可运行。
-- 📂 **批量转换**：支持选择多个文件或整个文件夹进行转换。
+- 🚀 **便携免安装**：无需安装，直接运行 `.exe` 即可使用。
+- 📂 **多格式支持**：批量处理 Word (.doc)、Excel (.xls) 和 PowerPoint (.ppt)。
 - 🖱️ **拖拽支持**：只需将文档拖入界面即可开始。
-- 🔄 **自动重命名**：智能处理文件名冲突，防止数据覆盖。
-- 🌐 **双语界面**：流畅的中英文切换，适配深色模式美学。
-- ⚡ **高还原度**：通过 PowerShell 调用系统安装的 Microsoft Word 引擎，确保转换效果完美。
+- 🔄 **并发加速**：支持多线程并行转换（默认同时处理 3 个文件）。
+- 🛠️ **稳健容错**：自动超时跳过损坏或响应过慢的文件。
+- 🎨 **分类主题**：为不同 Office 应用提供专属图标和配色标识。
+- ⚡ **高还原度**：通过调用本地 Office 引擎确保转换效果完美。
 
 ## 📋 系统要求
 
 - **操作系统**：Windows 10 或 11。
-- **环境依赖**：系统中必须安装有 **Microsoft Word**，因为转换器利用其 COM 引擎完成格式处理。
+- **环境依赖**：系统中需安装有对应的 **Microsoft Office** 软件。
 
 ## 🚀 快速上手
 
-1.  从 [Releases](https://github.com/antigravity/doc2docx/releases) 页面下载最新的 `Doc2Docx.exe`。
+1.  从 [Releases](https://github.com/antigravity/office-legacy-converter/releases) 页面下载最新的 `Office Legacy Converter 1.0.0.exe`。
 2.  **直接运行** 应用。
 3.  **添加文件**：
     - 点击 **选择文件** 选取特定文档。
-    - 点击 **选择文件夹** 添加目录下的所有 `.doc` 文件。
+    - 点击 **选择文件夹** 添加目录下的所有旧版文档。
     - 也可以将文档直接**拖拽**到应用界面。
 4.  点击 **开始转换** 即可。
 
-## 🛠️ 开发者指南
+## 🛠️ For Developers
 
-### 前项准备
+### Prerequisites
 
 - [Node.js](https://nodejs.org/) (v16+)
 - npm
 
-### 安装
+### Installation
 
 ```bash
 # 克隆仓库
-git clone https://github.com/antigravity/doc2docx.git
+git clone https://github.com/antigravity/office-legacy-converter.git
 
 # 安装依赖
 npm install
 ```
 
-### 开发环境
+### Development
 
 ```bash
 # 启动开发服务器
 npm run dev
 ```
 
-### 编译打包
+### Build
 
 ```bash
 # 构建便携式可执行文件

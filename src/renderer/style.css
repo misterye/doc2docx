@@ -279,13 +279,62 @@ footer {
 }
 
 #start-btn {
-  width: 150px;
-  padding: 12px;
+  padding: 12px 24px;
   font-size: 15px;
   font-weight: 600;
 }
 
+.btn.danger {
+  background: var(--error);
+  color: white;
+}
+
+.btn.danger:hover {
+  background: #dc2626;
+  box-shadow: 0 0 15px rgba(239, 68, 68, 0.4);
+}
+
+.action-group {
+  display: flex;
+  gap: 12px;
+}
+
+.cancel-btn {
+  background: transparent;
+  border: none;
+  color: var(--text-dim);
+  cursor: pointer;
+  padding: 4px;
+  border-radius: 4px;
+  transition: all 0.2s;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.cancel-btn:hover {
+  background: rgba(239, 68, 68, 0.2);
+  color: var(--error);
+}
+
+.status-timeout { color: #f59e0b; }
+.status-stopped { color: #64748b; }
+
+/* File Type Theme Colors */
+.file-item.type-word { border-left: 3px solid #3b82f6; }
+.file-item.type-excel { border-left: 3px solid #10b981; }
+.file-item.type-ppt { border-left: 3px solid #f59e0b; }
+
+.file-item.type-word .file-icon { color: #3b82f6; }
+.file-item.type-excel .file-icon { color: #10b981; }
+.file-item.type-ppt .file-icon { color: #f59e0b; }
+
+.file-item.type-word .file-status.status-converting { color: #3b82f6; }
+.file-item.type-excel .file-status.status-converting { color: #10b981; }
+.file-item.type-ppt .file-status.status-converting { color: #f59e0b; }
+
 #start-btn[disabled] {
+
   opacity: 0.5;
   cursor: not-allowed;
   filter: grayscale(1);

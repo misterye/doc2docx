@@ -1,7 +1,7 @@
 {
-  "name": "doc2docx",
+  "name": "office-legacy-converter",
   "version": "1.0.0",
-  "description": "Portable Word Doc to Docx Converter",
+  "description": "Batch converter for legacy Office documents (.doc, .xls, .ppt)",
   "main": "src/main/index.js",
   "author": "Antigravity",
   "license": "MIT",
@@ -19,8 +19,8 @@
     "vite": "^5.0.12"
   },
   "build": {
-    "appId": "com.antigravity.doc2docx",
-    "productName": "Doc2Docx",
+    "appId": "com.antigravity.office-legacy-converter",
+    "productName": "Office Legacy Converter",
     "directories": {
       "output": "dist-electron"
     },
